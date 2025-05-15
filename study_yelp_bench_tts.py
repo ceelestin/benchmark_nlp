@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3" # Set this BEFORE any torch-related imports
+os.environ["CUDA_VISIBLE_DEVICES"] = "2" # Set this BEFORE any torch-related imports
 
 from datasets import load_dataset
 from transformers import AutoTokenizer
@@ -150,6 +150,7 @@ for config_name, peft_config_obj in model_configurations.items():
         per_device_eval_batch_size=128,
         logging_steps=10,
         save_strategy="epoch",
+        dataloader_num_workers=15,
         load_best_model_at_end=True,
         metric_for_best_model="eval_accuracy",
         push_to_hub=False,
