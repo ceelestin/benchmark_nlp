@@ -8,3 +8,13 @@
 --n-splits 10 --seeds 2 3 --study-sizes 10000
 --n-splits 10 --seeds 3 4 --study-sizes 10000
 --n-splits 10 --seeds 4 5 --study-sizes 10000
+--n-splits 10 --seeds 0 1 --study-sizes 30000
+--n-splits 10 --seeds 1 2 --study-sizes 30000
+--n-splits 10 --seeds 2 3 --study-sizes 30000
+--n-splits 10 --seeds 3 4 --study-sizes 30000
+--n-splits 10 --seeds 4 5 --study-sizes 30000
+--n-splits 10 --seeds 0 1 --study-sizes 50000
+--n-splits 10 --seeds 1 2 --study-sizes 50000
+--n-splits 10 --seeds 2 3 --study-sizes 50000
+--n-splits 10 --seeds 3 4 --study-sizes 50000
+--n-splits 10 --seeds 4 5 --study-sizes 50000
