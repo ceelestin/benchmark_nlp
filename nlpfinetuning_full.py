@@ -67,7 +67,7 @@ n_splits_values_to_test = args.n_splits
 seeds_range = range(args.seeds[0], args.seeds[1])
 study_set_sizes_to_test = args.study_sizes
 
-benchmarking_set_size = 600000
+benchmarking_set_size = 600_000
 cv_test_size = 0.2
 
 
