@@ -1,3 +1,4 @@
+import gc
 import os
 import math
 import random
@@ -133,10 +134,10 @@ for model_arg_choice_iter in args.model_choices:
                 benchmarking_set_raw = original_train_set.select(range(benchmarking_set_size))
                 study_set_raw = original_train_set.select(range(benchmarking_set_size, benchmarking_set_size + current_study_set_size))
 
-                benchmarking_set_tokenized = benchmarking_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=False)
+                benchmarking_set_tokenized = benchmarking_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=True)
                 benchmarking_set = benchmarking_set_tokenized.rename_column("label", "labels") if "label" in benchmarking_set_tokenized.features else benchmarking_set_tokenized
 
-                study_set_tokenized = study_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=False)
+                study_set_tokenized = study_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=True)
                 study_set_for_cv = study_set_tokenized.rename_column("label", "labels") if "label" in study_set_tokenized.features else study_set_tokenized
 
                 min_samples_for_split = max(1, math.ceil(1/cv_test_size), math.ceil(1/(1-cv_test_size))) if 0 < cv_test_size < 1 else 2
@@ -169,10 +170,10 @@ for model_arg_choice_iter in args.model_choices:
                     logging_steps_val = max(1, len(train_fold_dataset) // (PER_DEVICE_TRAIN_BATCH_SIZE * num_gpus_runtime * 4))
 
                     output_dir_path = (
-                        OUTPUT_DIR / f"model_{model_arg_choice_iter}"
-                        / f"size_{current_study_set_size}" /
+                        OUTPUT_DIR / f"model_{model_arg_choice_iter}" /
+                        f"size_{current_study_set_size}" /
                         f"nsplits_{current_n_splits_value}" /
-                        f"seed_{current_seed}" / f" fold_{fold_idx+1}" /
+                        f"seed_{current_seed}" / f"fold_{fold_idx+1}" /
                         f"{training_config_name}"
                     )
 
@@ -183,9 +184,11 @@ for model_arg_choice_iter in args.model_choices:
                         per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
                         per_device_eval_batch_size=128,
                         logging_steps=logging_steps_val,
-                        save_strategy="epoch",
-                        dataloader_num_workers=4,
+                        save_strategy="best",
+                        save_total_limit=1,  # Limit the number of checkpoints
+                        save_only_model=True,  # Limit the checkpoints' size
                         load_best_model_at_end=True,
+                        dataloader_num_workers=4,
                         metric_for_best_model="eval_accuracy",
                         push_to_hub=False,
                         label_names=["labels"],
@@ -240,6 +243,7 @@ for model_arg_choice_iter in args.model_choices:
                         all_results_data.append(error_entry)
                     finally:
                         del model_instance, trainer_obj
+                        gc.collect()
                         if torch.cuda.is_available(): torch.cuda.empty_cache()
                 if not fold_iteration_successful:
                     print(f"WARNING: No valid folds processed for model {model_arg_choice_iter}, size {current_study_set_size}, n_splits {current_n_splits_value}, seed {current_seed}.")
