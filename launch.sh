@@ -1,8 +1,9 @@
 #!/bin/bash
-#SBATCH --time=05:00:00
+#SBATCH --time=12:00:00
 #SBATCH -C h100
 #SBATCH --gres=gpu:1
 #SBATCH --account=lsd@h100
+#SBATCH --cpus-per-gpu 6
 #SBATCH --partition=gpu_p6
 #SBATCH --job-name=ceve_finetuning
 #SBATCH --output=slurm_output/ft_%a.out

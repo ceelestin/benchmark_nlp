@@ -1,27 +1,46 @@
 import os
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
-import argparse
 import math
-from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
-from sklearn.model_selection import ShuffleSplit
+import random
+import argparse
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
+from sklearn.model_selection import ShuffleSplit
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import evaluate
 import torch
-import pandas as pd
-import random
+from datasets import load_dataset
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
 
 # --- Training Constants ---
 NUM_TRAIN_EPOCHS = 3
 PER_DEVICE_TRAIN_BATCH_SIZE = 32
 
+OUTPUT_DIR = Path("results_output")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Run NLP full fine-tuning benchmarks for specified models.")
-    parser.add_argument("--gpu-id", type=str, default="0", help="GPU ID to use.")
-    parser.add_argument("--n-splits", type=int, nargs='+', default=[1], help="List of n_splits values for ShuffleSplit.")
-    parser.add_argument("--seeds", type=int, nargs=2, default=[0, 1], metavar=('START_SEED', 'END_SEED_EXCLUSIVE'), help="Range of seeds.")
-    parser.add_argument("--study-sizes", type=int, nargs='+', default=[100, 500], help="List of study set sizes.")
+    parser = argparse.ArgumentParser(
+        description="Run NLP full fine-tuning benchmarks for specified models."
+    )
+    parser.add_argument(
+        "--gpu-id", type=str, default="0", help="GPU ID to use."
+    )
+    parser.add_argument(
+        "--n-splits", type=int, nargs='+', default=[1],
+        help="List of n_splits values for ShuffleSplit."
+    )
+    parser.add_argument(
+        "--seeds", type=int, nargs=2, default=[0, 1],
+        metavar=('START_SEED', 'END_SEED_EXCLUSIVE'), help="Range of seeds."
+    )
+    parser.add_argument(
+        "--study-sizes", type=int, nargs='+', default=[100, 500],
+        help="List of study set sizes."
+    )
     parser.add_argument(
         "--model-choices",
         type=str,
@@ -32,6 +51,7 @@ def parse_arguments():
     )
     args = parser.parse_args()
     return args
+
 
 args = parse_arguments()
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
@@ -54,7 +74,7 @@ n_splits_values_to_test = args.n_splits
 seeds_range = range(args.seeds[0], args.seeds[1])
 study_set_sizes_to_test = args.study_sizes
 
-benchmarking_set_size = 10
+benchmarking_set_size = 600_000
 cv_test_size = 0.2
 
 if "CUDA_VISIBLE_DEVICES" in os.environ:
@@ -65,7 +85,10 @@ else:
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
-    print(f"PyTorch is using device: {device}. Sees {torch.cuda.device_count()} CUDA device(s).")
+    print(
+        f"PyTorch is using device: {device}. "
+        "Sees {torch.cuda.device_count()} CUDA device(s)."
+    )
 else:
     device = torch.device("cpu")
     print(f"CUDA not available. Using CPU: {device}")
@@ -145,7 +168,13 @@ for model_arg_choice_iter in args.model_choices:
                     num_gpus_runtime = max(1, torch.cuda.device_count() if torch.cuda.is_available() else 1)
                     logging_steps_val = max(1, len(train_fold_dataset) // (PER_DEVICE_TRAIN_BATCH_SIZE * num_gpus_runtime * 4))
 
-                    output_dir_path = f"results_output/model_{model_arg_choice_iter}/size_{current_study_set_size}/nsplits_{current_n_splits_value}/seed_{current_seed}/fold_{fold_idx+1}/{training_config_name}"
+                    output_dir_path = (
+                        OUTPUT_DIR / f"model_{model_arg_choice_iter}"
+                        / f"size_{current_study_set_size}" /
+                        f"nsplits_{current_n_splits_value}" /
+                        f"seed_{current_seed}" / f" fold_{fold_idx+1}" /
+                        f"{training_config_name}"
+                    )
 
                     training_args_obj = TrainingArguments(
                         output_dir=output_dir_path,
@@ -166,8 +195,12 @@ for model_arg_choice_iter in args.model_choices:
                     )
 
                     trainer_obj = Trainer(
-                        model=model_instance, args=training_args_obj, train_dataset=train_fold_dataset,
-                        eval_dataset=eval_fold_dataset, compute_metrics=compute_metrics_fn, tokenizer=tokenizer
+                        model=model_instance,
+                        args=training_args_obj,
+                        train_dataset=train_fold_dataset,
+                        eval_dataset=eval_fold_dataset,
+                        compute_metrics=compute_metrics_fn,
+                        tokenizer=tokenizer
                     )
 
                     current_train_runtime_val = None
@@ -219,9 +252,10 @@ n_splits_str = "_".join(map(str, args.n_splits))
 seeds_str = f"{args.seeds[0]}-{args.seeds[1]-1}"
 study_sizes_str = "_".join(map(str, args.study_sizes))
 args_desc = f"models_{models_str}_nsplits_{n_splits_str}_seeds_{seeds_str}_sizes_{study_sizes_str}"
-parquet_file_path = f"benchmark_results_cv_{args_desc}_{timestamp}.parquet"
+parquet_file_path = OUTPUT_DIR / "parquet" / f"benchmark_results_cv_{args_desc}_{timestamp}.parquet"
 
 if not results_df.empty:
+    parquet_file_path.parent.mkdir(parents=True, exist_ok=True)
     results_df.to_parquet(parquet_file_path)
     print(f"\nResults saved to {parquet_file_path}")
     print("\n--- Results (from DataFrame) ---")
