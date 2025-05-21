@@ -203,7 +203,7 @@ for model_arg_choice_iter in args.model_choices:
                         train_dataset=train_fold_dataset,
                         eval_dataset=eval_fold_dataset,
                         compute_metrics=compute_metrics_fn,
-                        tokenizer=tokenizer
+                        processing_class=tokenizer
                     )
 
                     current_train_runtime_val = None
