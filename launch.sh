@@ -12,6 +12,6 @@
 module purge
 module load arch/h100 pytorch-gpu
 
-params=$(awk -v  idx_param="${SLURM_ARRAY_TASK_ID}" 'NR==idx_param' configs3.txt)
+params=$(awk -v  idx_param="${SLURM_ARRAY_TASK_ID}" 'NR==idx_param' configs_cv_nobench_1seed.txt)
 
-python nlpfinetuning_full.py $params
+python nlpfinetuning_full_adapted.py $params

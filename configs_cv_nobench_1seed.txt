@@ -1,0 +1,6 @@
+--n-splits 20 --seeds 0 1 --study-sizes 1000 --model-choices bert --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 1000 --model-choices roberta --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 3000 --model-choices bert --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 3000 --model-choices roberta --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 10000 --model-choices bert --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 10000 --model-choices roberta --skip-benchmark
