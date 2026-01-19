@@ -55,6 +55,11 @@ def parse_arguments():
         action="store_true",
         help="If set, disables cross-validation (overriding --n-splits to 1) and evaluates on partitioned hidden test sets."
     )
+    parser.add_argument(
+        "--skip-benchmark",
+        action="store_true",
+        help="If set, skips tokenization and evaluation on the fixed benchmarking set."
+    )
     args = parser.parse_args()
     return args
 
@@ -155,8 +160,10 @@ for model_arg_choice_iter in args.model_choices:
                 study_set_raw = original_train_set.select(range(benchmarking_set_size, benchmarking_set_size + current_study_set_size))
 
                 # Tokenize generic sets
-                benchmarking_set_tokenized = benchmarking_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=True)
-                benchmarking_set = benchmarking_set_tokenized.rename_column("label", "labels") if "label" in benchmarking_set_tokenized.features else benchmarking_set_tokenized
+                benchmarking_set = None
+                if not args.skip_benchmark:
+                    benchmarking_set_tokenized = benchmarking_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=True)
+                    benchmarking_set = benchmarking_set_tokenized.rename_column("label", "labels") if "label" in benchmarking_set_tokenized.features else benchmarking_set_tokenized
 
                 study_set_tokenized = study_set_raw.map(tokenize_function, batched=True, remove_columns=['text'], load_from_cache_file=True)
                 study_set_for_cv = study_set_tokenized.rename_column("label", "labels") if "label" in study_set_tokenized.features else study_set_tokenized
@@ -276,7 +283,9 @@ for model_arg_choice_iter in args.model_choices:
                         # Evaluate on all sets
                         eval_results_validation = trainer_obj.evaluate(eval_dataset=validation_fold_dataset)
                         eval_results_study_test = trainer_obj.evaluate(eval_dataset=test_fold_dataset)
-                        eval_results_benchmark_set = trainer_obj.evaluate(eval_dataset=benchmarking_set)
+                        eval_results_benchmark_set = {}
+                        if not args.skip_benchmark and benchmarking_set is not None:
+                            eval_results_benchmark_set = trainer_obj.evaluate(eval_dataset=benchmarking_set)
 
                         # --- Hidden Test Set Evaluation (If applicable) ---
                         hidden_test_accuracies = []
@@ -319,7 +328,8 @@ for model_arg_choice_iter in args.model_choices:
                             "seed": current_seed,
                             "fold_index": fold_idx + 1,
                             "training_config": training_config_name,
-                            "cross_validation_enabled": not args.disable_cross_validation,
+                            "cross_validation": not args.disable_cross_validation,
+                            "skipped_benchmark": args.skip_benchmark,
                             "train_runtime": current_train_runtime_val,
 
                             # Validation Set Metrics (Used for model selection)
@@ -333,6 +343,7 @@ for model_arg_choice_iter in args.model_choices:
                             "study_test_eval_accuracy": eval_results_study_test.get('eval_accuracy'),
                             "study_test_eval_runtime": eval_results_study_test.get('eval_runtime'),
 
+                            # Benchmarking Set Metrics (Fixed set), None if skipped
                             "benchmark_eval_loss": eval_results_benchmark_set.get('eval_loss'),
                             "benchmark_eval_accuracy": eval_results_benchmark_set.get('eval_accuracy'),
                             "benchmark_eval_runtime": eval_results_benchmark_set.get('eval_runtime'),
