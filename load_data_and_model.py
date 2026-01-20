@@ -17,9 +17,6 @@ raw_dataset_full = load_dataset(
 num_labels_for_classification = (
     raw_dataset_full["train"].features["label"].num_classes
 )
-metric_accuracy = evaluate.load(
-    "accuracy", download_mode="reuse_cache_if_exists"
-)
 
 for model_name in MODEL_HUGGINGFACE_IDENTIFIERS.values():
     print(f"Loading {model_name}")

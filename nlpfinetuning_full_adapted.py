@@ -110,7 +110,6 @@ raw_dataset_full = load_dataset(
     "yelp_review_full", download_mode="reuse_cache_if_exists"
 )
 num_labels_for_classification = raw_dataset_full["train"].features["label"].num_classes
-print("done")
 
 def compute_metrics_fn(eval_pred):
     logits, labels = eval_pred
