@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, train_test_split
+from sklearn.metrics import accuracy_score
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-import evaluate
 import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
@@ -110,17 +110,12 @@ raw_dataset_full = load_dataset(
     "yelp_review_full", download_mode="reuse_cache_if_exists"
 )
 num_labels_for_classification = raw_dataset_full["train"].features["label"].num_classes
-
-print("done\nLoading metric...", end="", flush=True)
-metric_accuracy = evaluate.load(
-    "accuracy", download_mode="reuse_cache_if_exists"
-)
 print("done")
 
 def compute_metrics_fn(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    return metric_accuracy.compute(predictions=predictions, references=labels)
+    return {"accuracy": accuracy_score(labels, predictions)}
 
 # --- Main Experiment Loop ---
 all_results_data = []
