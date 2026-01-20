@@ -99,17 +99,23 @@ if torch.cuda.is_available():
     device = torch.device("cuda")
     print(
         f"PyTorch is using device: {device}. "
-        "Sees {torch.cuda.device_count()} CUDA device(s)."
+        f"Sees {torch.cuda.device_count()} CUDA device(s)."
     )
 else:
     device = torch.device("cpu")
     print(f"CUDA not available. Using CPU: {device}")
 
-raw_dataset_full = load_dataset("yelp_review_full")
+print("Loading dataset...", end="", flush=True)
+raw_dataset_full = load_dataset(
+    "yelp_review_full", download_mode="reuse_cache_if_exists"
+)
 num_labels_for_classification = raw_dataset_full["train"].features["label"].num_classes
 
-all_results_data = []
-metric_accuracy = evaluate.load("accuracy")
+print("done\nLoading metric...", end="", flush=True)
+metric_accuracy = evaluate.load(
+    "accuracy", download_mode="reuse_cache_if_exists"
+)
+print("done")
 
 def compute_metrics_fn(eval_pred):
     logits, labels = eval_pred
@@ -117,6 +123,7 @@ def compute_metrics_fn(eval_pred):
     return metric_accuracy.compute(predictions=predictions, references=labels)
 
 # --- Main Experiment Loop ---
+all_results_data = []
 for model_arg_choice_iter in args.model_choices:
     CURRENT_MODEL_HF_NAME = MODEL_HUGGINGFACE_IDENTIFIERS[model_arg_choice_iter]
     tokenizer = AutoTokenizer.from_pretrained(CURRENT_MODEL_HF_NAME)
