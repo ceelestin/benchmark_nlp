@@ -1,0 +1,12 @@
+--n-splits 20 --seeds 0 1 --study-sizes 1250 --model-choices bert --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 1250 --model-choices roberta --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 3750 --model-choices bert --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 3750 --model-choices roberta --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 12500 --model-choices bert --skip-benchmark
+--n-splits 20 --seeds 0 1 --study-sizes 12500 --model-choices roberta --skip-benchmark
+--seeds 0 1 --study-sizes 1250 --model-choices bert --disable_cross_validation
+--seeds 0 1 --study-sizes 1250 --model-choices roberta --disable_cross_validation
+--seeds 0 1 --study-sizes 3750 --model-choices bert --disable_cross_validation
+--seeds 0 1 --study-sizes 3750 --model-choices roberta --disable_cross_validation
+--seeds 0 1 --study-sizes 12500 --model-choices bert --disable_cross_validation
+--seeds 0 1 --study-sizes 12500 --model-choices roberta --disable_cross_validation
