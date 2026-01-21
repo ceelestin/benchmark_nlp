@@ -1,5 +1,10 @@
 import gc
 import os
+# Force offline mode before importing transformers/datasets
+os.environ["HF_DATASETS_OFFLINE"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
 import math
 import random
 import argparse
@@ -271,7 +276,7 @@ for model_arg_choice_iter in args.model_choices:
                         train_dataset=train_fold_dataset,
                         eval_dataset=validation_fold_dataset, # Use Validation set for training loop evaluation
                         compute_metrics=compute_metrics_fn,
-                        tokenizer=tokenizer
+                        processing_class=tokenizer
                     )
 
                     current_train_runtime_val = None
