@@ -13,6 +13,11 @@ module purge
 # module load arch/h100 pytorch-gpu
 module load pytorch-gpu
 
+# Force offline mode before importing transformers/datasets
+os.environ["HF_DATASETS_OFFLINE"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
 params=$(awk -v  idx_param="${SLURM_ARRAY_TASK_ID}" 'NR==idx_param' configs_cv_nobench_1seed.txt)
 
 python nlpfinetuning_full_adapted.py $params

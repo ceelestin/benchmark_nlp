@@ -1,10 +1,5 @@
 import gc
 import os
-# Force offline mode before importing transformers/datasets
-os.environ["HF_DATASETS_OFFLINE"] = "1"
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
-
 import math
 import random
 import argparse
