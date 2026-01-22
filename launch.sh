@@ -18,6 +18,6 @@ export HF_DATASETS_OFFLINE=1
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
 
-params=$(awk -v  idx_param="${SLURM_ARRAY_TASK_ID}" 'NR==idx_param' configs_cv_100seeds.txt)
+params=$(awk -v  idx_param="${SLURM_ARRAY_TASK_ID}" 'NR==idx_param' configs_cv_20seeds.txt)
 
 python nlpfinetuning_full_adapted.py $params
