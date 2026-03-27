@@ -17,7 +17,6 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trai
 
 # --- Training Constants ---
 NUM_TRAIN_EPOCHS = 3
-PER_DEVICE_TRAIN_BATCH_SIZE = 32
 
 OUTPUT_DIR = Path("results_output")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -47,7 +46,7 @@ def parse_arguments():
         type=str,
         nargs='+',
         default=["bert"],
-        choices=["bert", "roberta", "t5", "modernbert"],
+        choices=["bert", "roberta", "t5", "modernbert", "qwen3-0.6b", "qwen3-1.7b"],
         help="Choose one or more models to run full fine-tuning on."
     )
     parser.add_argument(
@@ -68,11 +67,13 @@ args = parse_arguments()
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
 print(f"Cross-Validation Status: {'Disabled' if args.disable_cross_validation else 'Enabled'}")
 
-MODEL_HUGGINGFACE_IDENTIFIERS = {
-    "bert": "google-bert/bert-base-cased",
-    "roberta": "FacebookAI/xlm-roberta-base",
-    "t5": "google-t5/t5-base",
-    "modernbert": "answerdotai/ModernBERT-base"
+MODEL_CONFIGS = {
+    "bert":       {"hf_name": "google-bert/bert-base-cased",    "is_decoder": False, "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
+    "roberta":    {"hf_name": "FacebookAI/xlm-roberta-base",    "is_decoder": False, "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
+    "t5":         {"hf_name": "google-t5/t5-base",              "is_decoder": False, "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
+    "modernbert": {"hf_name": "answerdotai/ModernBERT-base",    "is_decoder": False, "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
+    "qwen3-0.6b": {"hf_name": "Qwen/Qwen3-0.6B",               "is_decoder": True,  "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
+    "qwen3-1.7b": {"hf_name": "Qwen/Qwen3-1.7B",               "is_decoder": True,  "per_device_train_batch_size": 4,  "gradient_accumulation_steps": 8, "gradient_checkpointing": True},
 }
 
 print("Beginning the script with the following configurations:")
@@ -119,8 +120,13 @@ def compute_metrics_fn(eval_pred):
 # --- Main Experiment Loop ---
 all_results_data = []
 for model_arg_choice_iter in args.model_choices:
-    CURRENT_MODEL_HF_NAME = MODEL_HUGGINGFACE_IDENTIFIERS[model_arg_choice_iter]
+    current_model_config = MODEL_CONFIGS[model_arg_choice_iter]
+    CURRENT_MODEL_HF_NAME = current_model_config["hf_name"]
+    IS_DECODER_MODEL = current_model_config["is_decoder"]
     tokenizer = AutoTokenizer.from_pretrained(CURRENT_MODEL_HF_NAME)
+    if IS_DECODER_MODEL:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = "left"
     print(f"\n\n#################### Processing Model: {model_arg_choice_iter} ({CURRENT_MODEL_HF_NAME}) ####################")
 
     def tokenize_function(examples):
@@ -232,10 +238,15 @@ for model_arg_choice_iter in args.model_choices:
                     training_config_name = "full_finetune"
 
                     model_instance = AutoModelForSequenceClassification.from_pretrained(CURRENT_MODEL_HF_NAME, num_labels=num_labels_for_classification)
+                    if IS_DECODER_MODEL:
+                        model_instance.config.pad_token_id = tokenizer.pad_token_id
                     model_instance.to(device)
 
+                    _model_batch_size = current_model_config["per_device_train_batch_size"]
+                    _grad_accum = current_model_config["gradient_accumulation_steps"]
                     num_gpus_runtime = max(1, torch.cuda.device_count() if torch.cuda.is_available() else 1)
-                    logging_steps_val = max(1, len(train_fold_dataset) // (PER_DEVICE_TRAIN_BATCH_SIZE * num_gpus_runtime * 4))
+                    effective_batch_size = _model_batch_size * _grad_accum * num_gpus_runtime
+                    logging_steps_val = max(1, len(train_fold_dataset) // (effective_batch_size * 4))
 
                     output_dir_path = (
                         OUTPUT_DIR / f"model_{model_arg_choice_iter}" /
@@ -245,11 +256,14 @@ for model_arg_choice_iter in args.model_choices:
                         f"{training_config_name}"
                     )
 
+                    _use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+                    _use_fp16 = torch.cuda.is_available() and not _use_bf16
                     training_args_obj = TrainingArguments(
                         output_dir=output_dir_path,
                         eval_strategy="epoch",
                         num_train_epochs=NUM_TRAIN_EPOCHS,
-                        per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
+                        per_device_train_batch_size=_model_batch_size,
+                        gradient_accumulation_steps=_grad_accum,
                         per_device_eval_batch_size=128,
                         logging_steps=logging_steps_val,
                         save_strategy="best",
@@ -261,7 +275,9 @@ for model_arg_choice_iter in args.model_choices:
                         push_to_hub=False,
                         label_names=["labels"],
                         report_to="none",
-                        fp16=torch.cuda.is_available(),
+                        fp16=_use_fp16,
+                        bf16=_use_bf16,
+                        gradient_checkpointing=current_model_config["gradient_checkpointing"],
                         seed=current_seed
                     )
 
