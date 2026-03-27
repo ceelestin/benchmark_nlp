@@ -1,17 +1,16 @@
 #!/bin/bash
 #SBATCH --time=12:00:00
-#SBATCH -C v100-32g
+#SBATCH -C h100
 #SBATCH --gres=gpu:1
-#SBATCH --account=lsd@v100
+#SBATCH --account=ozx@h100
 #SBATCH --cpus-per-gpu 10
-#SBATCH --partition=gpu_p13
 #SBATCH --job-name=ceve_finetuning
 #SBATCH --output=slurm_output/ft_%a.out
 #SBATCH --error=slurm_output/ft_%a.out
 
 module purge
-# module load arch/h100 pytorch-gpu
-module load pytorch-gpu
+module load arch/h100 pytorch-gpu
+# module load pytorch-gpu
 
 # Force offline mode before importing transformers/datasets
 export HF_DATASETS_OFFLINE=1

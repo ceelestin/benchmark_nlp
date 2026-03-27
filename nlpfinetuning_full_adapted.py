@@ -74,7 +74,7 @@ MODEL_CONFIGS = {
     "t5":         {"hf_name": "google-t5/t5-base",              "is_decoder": False, "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
     "modernbert": {"hf_name": "answerdotai/ModernBERT-base",    "is_decoder": False, "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
     "qwen3-0.6b": {"hf_name": "Qwen/Qwen3-0.6B",               "is_decoder": True,  "per_device_train_batch_size": 32, "gradient_accumulation_steps": 1, "gradient_checkpointing": False},
-    "qwen3-1.7b": {"hf_name": "Qwen/Qwen3-1.7B",               "is_decoder": True,  "per_device_train_batch_size": 4,  "gradient_accumulation_steps": 8, "gradient_checkpointing": True},
+    "qwen3-1.7b": {"hf_name": "Qwen/Qwen3-1.7B",               "is_decoder": True,  "per_device_train_batch_size": 16,  "gradient_accumulation_steps": 2, "gradient_checkpointing": True},
 }
 
 print("Beginning the script with the following configurations:")
@@ -269,7 +269,7 @@ for model_arg_choice_iter in args.model_choices:
                         num_train_epochs=NUM_TRAIN_EPOCHS,
                         per_device_train_batch_size=_model_batch_size,
                         gradient_accumulation_steps=_grad_accum,
-                        per_device_eval_batch_size=128,
+                        per_device_eval_batch_size=512,
                         logging_steps=logging_steps_val,
                         save_strategy="best",
                         save_total_limit=1,
