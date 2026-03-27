@@ -109,7 +109,8 @@ else:
 
 print("Loading dataset...", end="", flush=True)
 raw_dataset_full = load_dataset(
-    "yelp_review_full", download_mode="reuse_cache_if_exists"
+    "yelp_review_full", "yelp_review_full",
+    download_mode="reuse_cache_if_exists"
 )
 num_labels_for_classification = raw_dataset_full["train"].features["label"].num_classes
 
