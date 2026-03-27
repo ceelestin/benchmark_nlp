@@ -1,0 +1,6 @@
+--seeds 0 1 --study-sizes 1250 --model-choices qwen3-0.6b --disable_cross_validation
+--seeds 0 1 --study-sizes 1250 --model-choices qwen3-1.7b --disable_cross_validation
+--seeds 0 1 --study-sizes 3750 --model-choices qwen3-0.6b --disable_cross_validation
+--seeds 0 1 --study-sizes 3750 --model-choices qwen3-1.7b --disable_cross_validation
+--seeds 0 1 --study-sizes 12500 --model-choices qwen3-0.6b --disable_cross_validation
+--seeds 0 1 --study-sizes 12500 --model-choices qwen3-1.7b --disable_cross_validation
