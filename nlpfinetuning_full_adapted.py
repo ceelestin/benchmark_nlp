@@ -14,6 +14,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
+from transformers import logging as hf_logging
 
 # --- Training Constants ---
 NUM_TRAIN_EPOCHS = 3
@@ -237,8 +238,11 @@ for model_arg_choice_iter in args.model_choices:
 
                     training_config_name = "full_finetune"
 
+                    if IS_DECODER_MODEL:
+                        hf_logging.set_verbosity_error()
                     model_instance = AutoModelForSequenceClassification.from_pretrained(CURRENT_MODEL_HF_NAME, num_labels=num_labels_for_classification)
                     if IS_DECODER_MODEL:
+                        hf_logging.set_verbosity_warning()
                         model_instance.config.pad_token_id = tokenizer.pad_token_id
                     model_instance.to(device)
 

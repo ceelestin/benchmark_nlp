@@ -2,6 +2,7 @@ import evaluate
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification
+from transformers import logging as hf_logging
 
 
 MODEL_HUGGINGFACE_IDENTIFIERS = {
@@ -28,6 +29,9 @@ for model_key, model_name in MODEL_HUGGINGFACE_IDENTIFIERS.items():
     if model_key in DECODER_MODELS:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = "left"
+        hf_logging.set_verbosity_error()
     model_instance = AutoModelForSequenceClassification.from_pretrained(
         model_name, num_labels=num_labels_for_classification
     )
+    if model_key in DECODER_MODELS:
+        hf_logging.set_verbosity_warning()
