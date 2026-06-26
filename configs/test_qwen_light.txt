@@ -1,0 +1,1 @@
+--n-splits 1 --seeds 0 1 --study-sizes 64 --model-choices qwen3-0.6b --skip-benchmark
