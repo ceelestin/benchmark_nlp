@@ -2,7 +2,7 @@
 #SBATCH --time=12:00:00
 #SBATCH -C h100
 #SBATCH --gres=gpu:1
-#SBATCH --account=ozx@h100
+#SBATCH --account=sth@h100
 #SBATCH --cpus-per-gpu 10
 #SBATCH --job-name=ceve_finetuning
 #SBATCH --output=slurm_output/ft_%a.out

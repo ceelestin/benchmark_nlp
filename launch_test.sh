@@ -2,7 +2,7 @@
 #SBATCH --time=00:20:00
 #SBATCH -C h100
 #SBATCH --gres=gpu:1
-#SBATCH --account=ozx@h100
+#SBATCH --account=sth@h100
 #SBATCH --qos=qos_gpu_h100-dev
 #SBATCH --cpus-per-gpu 10
 #SBATCH --array=1
