@@ -5,8 +5,8 @@
 #SBATCH --account=sth@h100
 #SBATCH --cpus-per-gpu 10
 #SBATCH --job-name=ceve_finetuning
-#SBATCH --output=slurm_output/ft_%a.out
-#SBATCH --error=slurm_output/ft_%a.out
+#SBATCH --output=slurm_output/ft_nocv_%a.out
+#SBATCH --error=slurm_output/ft_nocv_%a.out
 
 module purge
 module load arch/h100 pytorch-gpu
