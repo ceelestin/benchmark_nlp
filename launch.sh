@@ -12,6 +12,9 @@ module purge
 module load arch/h100 pytorch-gpu
 # module load pytorch-gpu
 
+# Point HF at the primed offline cache on $WORK (compute nodes have no internet)
+export HF_HOME=$WORK/hf_cache
+
 # Force offline mode before importing transformers/datasets
 export HF_DATASETS_OFFLINE=1
 export HF_HUB_OFFLINE=1
