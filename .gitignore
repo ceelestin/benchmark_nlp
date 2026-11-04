@@ -1,0 +1,27 @@
+# Data: tokenized Yelp splits written by `nlpfinetuning_aligned.py prepare`, and the Hugging Face cache
+yelp_aligned/
+hf_cache/
+
+# Run outputs, checkpoints and logs
+results_output/
+results_aligned*/
+results_*/
+slurm_output/
+logs/
+*.parquet
+*.zip
+*.tgz
+*.tar.gz
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Core dumps
+core
+core.[0-9]*
+core-*
+
+# Local notes and scratch
+STATUS.md
