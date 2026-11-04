@@ -1,0 +1,12 @@
+# nlpfinetuning_full_adapted.py (the Qwen3-0.6B runs of the paper): versions of the Jean-Zay module
+# pytorch-gpu/py3/2.11.0 under arch/h100 (Python 3.12.13). Install the torch wheel that matches your CUDA.
+torch==2.11.0
+transformers==5.7.0
+tokenizers==0.22.2
+accelerate==1.13.0
+datasets==4.8.5
+huggingface-hub==1.13.0
+scikit-learn==1.8.0
+numpy==2.4.4
+pandas==2.3.3
+pyarrow==23.0.1

@@ -1,0 +1,13 @@
+# nlpfinetuning_aligned.py (the BERT and XLM-RoBERTa runs of the paper) and load_data_and_model.py: versions of the
+# Jean-Zay module pytorch-gpu/py3/2.8.0 (Python 3.12.11). The Qwen3-0.6B runs of nlpfinetuning_full_adapted.py used
+# another module: see requirements-qwen3.txt. Install the torch wheel that matches your CUDA.
+torch==2.8.0
+transformers==4.55.4
+tokenizers==0.21.4
+accelerate==1.10.1
+datasets==4.0.0
+huggingface-hub==0.34.4
+scikit-learn==1.7.1
+numpy==2.2.6
+pandas==2.3.1
+pyarrow==21.0.0
