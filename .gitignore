@@ -13,6 +13,13 @@ logs/
 *.tgz
 *.tar.gz
 
+# Result files: tables, figures and notebooks are not tracked, only the code
+*.csv
+*.pdf
+*.png
+*.log
+*.ipynb
+
 # Python
 __pycache__/
 *.py[cod]
