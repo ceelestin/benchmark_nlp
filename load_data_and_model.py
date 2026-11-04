@@ -1,3 +1,9 @@
+"""Fill the Hugging Face cache with Yelp Review Full and the checkpoints, so that offline compute nodes find them.
+
+Run once on a node with internet access, with the HF_HOME of the launchers (for example
+HF_HOME=$WORK/hf_cache python load_data_and_model.py). The paper uses bert, roberta and qwen3-0.6b; the other
+checkpoints of the list (t5, modernbert, qwen3-1.7b) served only in earlier runs.
+"""
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification

@@ -1,3 +1,19 @@
+"""Yelp Review Full fine-tuning loop of the Qwen3-0.6B runs of "Crossing the Validation Crisis" (Eve, Varoquaux and
+Moreau, 2026); the BERT and XLM-RoBERTa runs of the paper use nlpfinetuning_aligned.py instead.
+
+Protocol (Appendix F.3 of the paper): each seed shuffles the 650,000 training reviews; the first 600,000 form the
+benchmarking set (so it is not stratified and changes with the seed), the next --study-sizes ones the study set and,
+with --disable-cross-validation, the remaining ones the outer set. --study-sizes is the size of the study set:
+1,250 gives n_tr = 1,000, the training and validation subsets together. Each of the --n-splits ShuffleSplit splits
+(test fraction 0.2) fully fine-tunes the model for 3 epochs with the Hugging Face Trainer on 60% of the study set,
+keeps the epoch with the best accuracy on the 20% validation subset, and scores it on the validation subset, the
+test fold and the benchmarking set (unless --skip-benchmark). With --disable-cross-validation, a single split also
+scores the outer set, in chunks of the test-fold size. Reviews are truncated to 512 tokens and padded to the longest
+review of each block of 1,000. Each call writes one Parquet file to results_output/parquet/.
+
+The paper's runs: configs/qwen_0.6b_1000.txt (K = 20 splits) and configs/qwen_0.6b_1000_nocv.txt (single split),
+seeds 0-49, submitted with launch.sh (module pytorch-gpu/py3/2.11.0; requirements-qwen3.txt).
+"""
 import gc
 import os
 import math

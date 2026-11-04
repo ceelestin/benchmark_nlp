@@ -1,6 +1,8 @@
-"""Yelp Review Full fine-tuning aligned with the PCam protocol of the paper (CE, 2026-11-03).
+"""Yelp Review Full fine-tuning aligned with the PCam protocol of the paper: the BERT and XLM-RoBERTa runs of
+"Crossing the Validation Crisis" (Eve, Varoquaux and Moreau, 2026).
 
-Differences from nlpfinetuning_full_adapted.py, which produced the earlier Yelp runs and is kept unchanged:
+Differences from nlpfinetuning_full_adapted.py, which ran the Qwen3-0.6B runs of the paper (and earlier BERT and
+XLM-RoBERTa runs that the paper no longer uses) and is kept unchanged:
 
 * one fixed benchmarking set, the same for every seed and model: 600,000 of the 650,000 training reviews
   (stratified split, random_state 42). It is scored IN FULL after every split, length-sorted and padded per batch,
@@ -17,8 +19,9 @@ Differences from nlpfinetuning_full_adapted.py, which produced the earlier Yelp 
 Two steps:
     python nlpfinetuning_aligned.py prepare --model-choices roberta          # login node, CPU: tokenize once
     python nlpfinetuning_aligned.py run --model-choices roberta --train-sizes 1000 --n-splits 20 --seeds 0 1
-The prepare step writes $SCRATCH/yelp_aligned/<model>/ (tokenized training split, fixed split, benchmark order);
-run jobs read it and never tokenize the 600,000 benchmark reviews again.
+The prepare step writes <--data-dir>/<model>/ (tokenized training split, fixed split, benchmark order; --data-dir
+defaults to $SCRATCH/yelp_aligned, or ./yelp_aligned without $SCRATCH); run jobs read it and never tokenize the
+600,000 benchmark reviews again. Each run writes one Parquet file per (model, n_tr) to --out-dir.
 """
 import argparse
 import gc
