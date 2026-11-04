@@ -1,0 +1,1 @@
+`nlpfinetuning_full.py` is the 2025 version of the fine-tuning loop (BERT, XLM-RoBERTa, T5, ModernBERT; run from the repository root as `python legacy/nlpfinetuning_full.py`); no result of the paper depends on it, and `nlpfinetuning_full_adapted.py` superseded it.
